@@ -1,0 +1,42 @@
+syntax = "proto3";
+package api;
+option go_package = "api/proto/def";
+
+message KeyValue{
+  bytes key = 1;
+  //First revision number when this key value got created
+  int64 create_revision = 2;
+  //Last revision number after this key value got updated
+  int64 mod_revision = 3;
+  //Version of this key (different from revision)
+  int64 version = 4;
+  bytes value = 5;
+  int64 lease = 6;
+}
+
+message PutRequest{
+  // We use bytes here because KV should support all formats of data, and not limited to String
+  bytes key = 1;
+  bytes value = 2;
+  // Lease(TTL) ID
+  int64 lease = 3;
+  // If prev_key is set to true, the response will include the previous key-value pair, otherwise no value will be returned
+  bool prev_kv = 4;
+  //If ignore_value is set to true, value will not be reset.
+  bool ignore_value = 5;
+  //If ignore_lease is set to true, lease will not be reset.
+  bool ignore_lease = 6;
+}
+
+message PutResponse {
+  ResponseHeader header = 1;
+  KeyValue prev_kv = 2;
+}
+
+message ResponseHeader{
+  uint64 cluster_id = 1;
+  uint64 member_id = 2;
+  //All the operations will increment this revision number
+  int64 revision = 3;
+  uint64 raft_term = 4;
+}

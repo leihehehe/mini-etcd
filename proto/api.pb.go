@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.7
 // 	protoc        v3.20.3
-// source: rpc.proto
+// source: api.proto
 
-package def
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -20,19 +20,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-var File_rpc_proto protoreflect.FileDescriptor
+var File_api_proto protoreflect.FileDescriptor
 
-const file_rpc_proto_rawDesc = "" +
+const file_api_proto_rawDesc = "" +
 	"\n" +
-	"\trpc.proto\x12\x03api\x1a\bkv.proto20\n" +
+	"\tapi.proto\x12\x03api\x1a\bkv.proto20\n" +
 	"\x02KV\x12*\n" +
-	"\x03Put\x12\x0f.api.PutRequest\x1a\x10.api.PutResponse\"\x00B\x0fZ\rapi/proto/defb\x06proto3"
+	"\x03Put\x12\x0f.api.PutRequest\x1a\x10.api.PutResponse\"\x00B\vZ\tapi/protob\x06proto3"
 
-var file_rpc_proto_goTypes = []any{
+var file_api_proto_goTypes = []any{
 	(*PutRequest)(nil),  // 0: api.PutRequest
 	(*PutResponse)(nil), // 1: api.PutResponse
 }
-var file_rpc_proto_depIdxs = []int32{
+var file_api_proto_depIdxs = []int32{
 	0, // 0: api.KV.Put:input_type -> api.PutRequest
 	1, // 1: api.KV.Put:output_type -> api.PutResponse
 	1, // [1:2] is the sub-list for method output_type
@@ -42,9 +42,9 @@ var file_rpc_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_rpc_proto_init() }
-func file_rpc_proto_init() {
-	if File_rpc_proto != nil {
+func init() { file_api_proto_init() }
+func file_api_proto_init() {
+	if File_api_proto != nil {
 		return
 	}
 	file_kv_proto_init()
@@ -52,16 +52,16 @@ func file_rpc_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rpc_proto_rawDesc), len(file_rpc_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_proto_rawDesc), len(file_api_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_rpc_proto_goTypes,
-		DependencyIndexes: file_rpc_proto_depIdxs,
+		GoTypes:           file_api_proto_goTypes,
+		DependencyIndexes: file_api_proto_depIdxs,
 	}.Build()
-	File_rpc_proto = out.File
-	file_rpc_proto_goTypes = nil
-	file_rpc_proto_depIdxs = nil
+	File_api_proto = out.File
+	file_api_proto_goTypes = nil
+	file_api_proto_depIdxs = nil
 }

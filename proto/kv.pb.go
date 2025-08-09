@@ -4,7 +4,7 @@
 // 	protoc        v3.20.3
 // source: kv.proto
 
-package def
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -346,7 +346,7 @@ const file_kv_proto_rawDesc = "" +
 	"cluster_id\x18\x01 \x01(\x04R\tclusterId\x12\x1b\n" +
 	"\tmember_id\x18\x02 \x01(\x04R\bmemberId\x12\x1a\n" +
 	"\brevision\x18\x03 \x01(\x03R\brevision\x12\x1b\n" +
-	"\traft_term\x18\x04 \x01(\x04R\braftTermB\x0fZ\rapi/proto/defb\x06proto3"
+	"\traft_term\x18\x04 \x01(\x04R\braftTermB\vZ\tapi/protob\x06proto3"
 
 var (
 	file_kv_proto_rawDescOnce sync.Once

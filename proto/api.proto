@@ -1,8 +1,7 @@
 syntax = "proto3";
 import "kv.proto";
 package api;
-option go_package = "api/proto/def";
-
+option go_package = "api/proto";
 
 //This KV service is used to deal with operations on key-value pairs
 service KV{

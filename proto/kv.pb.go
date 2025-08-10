@@ -249,6 +249,152 @@ func (x *PutResponse) GetPrevKv() *KeyValue {
 	return nil
 }
 
+type RangeRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Key      []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	RangeEnd []byte                 `protobuf:"bytes,2,opt,name=range_end,json=rangeEnd,proto3,oneof" json:"range_end,omitempty"`
+	Limit    int64                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	// MVCC: we can read a specific version
+	Revision int64 `protobuf:"varint,4,opt,name=revision,proto3" json:"revision,omitempty"`
+	// only return keys not ignore values
+	KeysOnly      bool `protobuf:"varint,5,opt,name=keys_only,json=keysOnly,proto3" json:"keys_only,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RangeRequest) Reset() {
+	*x = RangeRequest{}
+	mi := &file_kv_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RangeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RangeRequest) ProtoMessage() {}
+
+func (x *RangeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RangeRequest.ProtoReflect.Descriptor instead.
+func (*RangeRequest) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RangeRequest) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *RangeRequest) GetRangeEnd() []byte {
+	if x != nil {
+		return x.RangeEnd
+	}
+	return nil
+}
+
+func (x *RangeRequest) GetLimit() int64 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *RangeRequest) GetRevision() int64 {
+	if x != nil {
+		return x.Revision
+	}
+	return 0
+}
+
+func (x *RangeRequest) GetKeysOnly() bool {
+	if x != nil {
+		return x.KeysOnly
+	}
+	return false
+}
+
+type RangeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Header        *ResponseHeader        `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Kvs           []*KeyValue            `protobuf:"bytes,2,rep,name=kvs,proto3" json:"kvs,omitempty"`
+	More          bool                   `protobuf:"varint,3,opt,name=more,proto3" json:"more,omitempty"`
+	Count         int64                  `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RangeResponse) Reset() {
+	*x = RangeResponse{}
+	mi := &file_kv_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RangeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RangeResponse) ProtoMessage() {}
+
+func (x *RangeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RangeResponse.ProtoReflect.Descriptor instead.
+func (*RangeResponse) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RangeResponse) GetHeader() *ResponseHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *RangeResponse) GetKvs() []*KeyValue {
+	if x != nil {
+		return x.Kvs
+	}
+	return nil
+}
+
+func (x *RangeResponse) GetMore() bool {
+	if x != nil {
+		return x.More
+	}
+	return false
+}
+
+func (x *RangeResponse) GetCount() int64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
 type ResponseHeader struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ClusterId uint64                 `protobuf:"varint,1,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty"`
@@ -262,7 +408,7 @@ type ResponseHeader struct {
 
 func (x *ResponseHeader) Reset() {
 	*x = ResponseHeader{}
-	mi := &file_kv_proto_msgTypes[3]
+	mi := &file_kv_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -274,7 +420,7 @@ func (x *ResponseHeader) String() string {
 func (*ResponseHeader) ProtoMessage() {}
 
 func (x *ResponseHeader) ProtoReflect() protoreflect.Message {
-	mi := &file_kv_proto_msgTypes[3]
+	mi := &file_kv_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -287,7 +433,7 @@ func (x *ResponseHeader) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseHeader.ProtoReflect.Descriptor instead.
 func (*ResponseHeader) Descriptor() ([]byte, []int) {
-	return file_kv_proto_rawDescGZIP(), []int{3}
+	return file_kv_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ResponseHeader) GetClusterId() uint64 {
@@ -340,7 +486,20 @@ const file_kv_proto_rawDesc = "" +
 	"\fignore_lease\x18\x06 \x01(\bR\vignoreLease\"b\n" +
 	"\vPutResponse\x12+\n" +
 	"\x06header\x18\x01 \x01(\v2\x13.api.ResponseHeaderR\x06header\x12&\n" +
-	"\aprev_kv\x18\x02 \x01(\v2\r.api.KeyValueR\x06prevKv\"\x85\x01\n" +
+	"\aprev_kv\x18\x02 \x01(\v2\r.api.KeyValueR\x06prevKv\"\x9f\x01\n" +
+	"\fRangeRequest\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\fR\x03key\x12 \n" +
+	"\trange_end\x18\x02 \x01(\fH\x00R\brangeEnd\x88\x01\x01\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x03R\x05limit\x12\x1a\n" +
+	"\brevision\x18\x04 \x01(\x03R\brevision\x12\x1b\n" +
+	"\tkeys_only\x18\x05 \x01(\bR\bkeysOnlyB\f\n" +
+	"\n" +
+	"_range_end\"\x87\x01\n" +
+	"\rRangeResponse\x12+\n" +
+	"\x06header\x18\x01 \x01(\v2\x13.api.ResponseHeaderR\x06header\x12\x1f\n" +
+	"\x03kvs\x18\x02 \x03(\v2\r.api.KeyValueR\x03kvs\x12\x12\n" +
+	"\x04more\x18\x03 \x01(\bR\x04more\x12\x14\n" +
+	"\x05count\x18\x04 \x01(\x03R\x05count\"\x85\x01\n" +
 	"\x0eResponseHeader\x12\x1d\n" +
 	"\n" +
 	"cluster_id\x18\x01 \x01(\x04R\tclusterId\x12\x1b\n" +
@@ -360,21 +519,25 @@ func file_kv_proto_rawDescGZIP() []byte {
 	return file_kv_proto_rawDescData
 }
 
-var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_kv_proto_goTypes = []any{
 	(*KeyValue)(nil),       // 0: api.KeyValue
 	(*PutRequest)(nil),     // 1: api.PutRequest
 	(*PutResponse)(nil),    // 2: api.PutResponse
-	(*ResponseHeader)(nil), // 3: api.ResponseHeader
+	(*RangeRequest)(nil),   // 3: api.RangeRequest
+	(*RangeResponse)(nil),  // 4: api.RangeResponse
+	(*ResponseHeader)(nil), // 5: api.ResponseHeader
 }
 var file_kv_proto_depIdxs = []int32{
-	3, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
+	5, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
 	0, // 1: api.PutResponse.prev_kv:type_name -> api.KeyValue
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	5, // 2: api.RangeResponse.header:type_name -> api.ResponseHeader
+	0, // 3: api.RangeResponse.kvs:type_name -> api.KeyValue
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_kv_proto_init() }
@@ -382,13 +545,14 @@ func file_kv_proto_init() {
 	if File_kv_proto != nil {
 		return
 	}
+	file_kv_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_kv_proto_rawDesc), len(file_kv_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

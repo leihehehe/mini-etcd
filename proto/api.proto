@@ -6,4 +6,5 @@ option go_package = "api/proto";
 //This KV service is used to deal with operations on key-value pairs
 service KV{
   rpc Put(PutRequest) returns (PutResponse){}
+  rpc Range(RangeRequest) returns (RangeResponse){}
 }

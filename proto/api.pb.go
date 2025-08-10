@@ -24,19 +24,24 @@ var File_api_proto protoreflect.FileDescriptor
 
 const file_api_proto_rawDesc = "" +
 	"\n" +
-	"\tapi.proto\x12\x03api\x1a\bkv.proto20\n" +
+	"\tapi.proto\x12\x03api\x1a\bkv.proto2b\n" +
 	"\x02KV\x12*\n" +
-	"\x03Put\x12\x0f.api.PutRequest\x1a\x10.api.PutResponse\"\x00B\vZ\tapi/protob\x06proto3"
+	"\x03Put\x12\x0f.api.PutRequest\x1a\x10.api.PutResponse\"\x00\x120\n" +
+	"\x05Range\x12\x11.api.RangeRequest\x1a\x12.api.RangeResponse\"\x00B\vZ\tapi/protob\x06proto3"
 
 var file_api_proto_goTypes = []any{
-	(*PutRequest)(nil),  // 0: api.PutRequest
-	(*PutResponse)(nil), // 1: api.PutResponse
+	(*PutRequest)(nil),    // 0: api.PutRequest
+	(*RangeRequest)(nil),  // 1: api.RangeRequest
+	(*PutResponse)(nil),   // 2: api.PutResponse
+	(*RangeResponse)(nil), // 3: api.RangeResponse
 }
 var file_api_proto_depIdxs = []int32{
 	0, // 0: api.KV.Put:input_type -> api.PutRequest
-	1, // 1: api.KV.Put:output_type -> api.PutResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 1: api.KV.Range:input_type -> api.RangeRequest
+	2, // 2: api.KV.Put:output_type -> api.PutResponse
+	3, // 3: api.KV.Range:output_type -> api.RangeResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

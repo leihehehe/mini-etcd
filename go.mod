@@ -5,6 +5,7 @@ go 1.23.0
 toolchain go1.23.12
 
 require (
+	github.com/google/btree v1.1.3
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.7
 )

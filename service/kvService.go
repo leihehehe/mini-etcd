@@ -5,17 +5,19 @@ import (
 	"log"
 	pb "mini-etcd/proto"
 	"sync"
+
+	"github.com/google/btree"
 )
 
 type KvServer struct {
 	pb.UnimplementedKVServer
 	mu       sync.RWMutex
-	data     map[string]*kvEntry
+	data     *btree.BTree
 	revision int64
 }
 
 type kvEntry struct {
-	key            []byte
+	key            string
 	val            []byte
 	createRevision int64
 	modRevision    int64
@@ -23,9 +25,19 @@ type kvEntry struct {
 	lease          int64
 }
 
+type kvItem struct {
+	key   string
+	value *kvEntry
+}
+
+// Less comparator
+func (item *kvItem) Less(than btree.Item) bool {
+	return item.key < than.(*kvItem).key
+}
+
 func NewKVServer() *KvServer {
 	return &KvServer{
-		data: make(map[string]*kvEntry),
+		data: btree.New(64),
 	}
 }
 
@@ -36,11 +48,14 @@ func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse
 	defer s.mu.Unlock()
 	s.revision++
 	keyStr := string(req.Key)
+	item := &kvItem{key: keyStr}
 	var prevKv *pb.KeyValue
-	if entry, exist := s.data[keyStr]; exist {
+
+	if existingItem := s.data.Get(item); existingItem != nil {
+		entry := existingItem.(*kvItem).value
 		if req.PrevKv {
 			prevKv = &pb.KeyValue{
-				Key:            entry.key,
+				Key:            []byte(entry.key),
 				Value:          entry.val,
 				CreateRevision: entry.createRevision,
 				ModRevision:    entry.modRevision,
@@ -59,14 +74,18 @@ func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse
 			entry.lease = req.Lease
 		}
 	} else {
-		s.data[keyStr] = &kvEntry{
-			key:            append([]byte(nil), req.Key...),
-			val:            append([]byte(nil), req.Value...),
-			createRevision: s.revision,
-			modRevision:    s.revision,
-			version:        1,
-			lease:          req.Lease,
+		newItem := &kvItem{
+			key: keyStr,
+			value: &kvEntry{
+				key:            string(req.Key),
+				val:            append([]byte(nil), req.Value...),
+				createRevision: s.revision,
+				modRevision:    s.revision,
+				version:        1,
+				lease:          req.Lease,
+			},
 		}
+		s.data.ReplaceOrInsert(newItem)
 	}
 
 	resp := &pb.PutResponse{
@@ -99,32 +118,38 @@ func (s *KvServer) Range(context context.Context, req *pb.RangeRequest) (*pb.Ran
 	}
 
 	startKey := string(req.Key)
+	item := &kvItem{key: startKey}
 	if req.RangeEnd == nil {
-		if entry, exist := s.data[startKey]; exist && s.validRevision(req, entry) {
-			kvs = s.appendEntryToKvs(kvs, entry, req.KeysOnly)
+		if existingItem := s.data.Get(item); existingItem != nil {
+			entry := existingItem.(*kvItem).value
+			if s.validRevision(req, entry) {
+				kvs = s.appendItemToKvs(kvs, entry, req.KeysOnly)
+			}
 		}
 	} else {
-		rangeEndStr := string(req.RangeEnd)
-		for k, entry := range s.data {
+		rangeEndItem := &kvItem{key: string(req.RangeEnd)}
+		s.data.AscendRange(item, rangeEndItem, func(item btree.Item) bool {
+			entry := item.(*kvItem).value
 			if req.Limit > 0 && int64(len(kvs)) >= req.Limit {
-				break
+				return false
 			}
-			if k >= startKey && k < rangeEndStr && s.validRevision(req, entry) {
-				kvs = s.appendEntryToKvs(kvs, entry, req.KeysOnly)
+			if s.validRevision(req, entry) {
+				kvs = s.appendItemToKvs(kvs, entry, req.KeysOnly)
 			}
-		}
+			return true
+		})
 	}
 
 	return s.rangeResp(kvs), nil
 }
 
-func (s *KvServer) appendEntryToKvs(kvs []*pb.KeyValue, entry *kvEntry, keysOnly bool) []*pb.KeyValue {
+func (s *KvServer) appendItemToKvs(kvs []*pb.KeyValue, entry *kvEntry, keysOnly bool) []*pb.KeyValue {
 	var value []byte
 	if !keysOnly {
 		value = entry.val
 	}
 	kvs = append(kvs, &pb.KeyValue{
-		Key:            entry.key,
+		Key:            []byte(entry.key),
 		Value:          value,
 		CreateRevision: entry.createRevision,
 		ModRevision:    entry.modRevision,

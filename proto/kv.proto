@@ -36,6 +36,7 @@ message PutResponse {
 message RangeRequest{
   bytes key = 1;
   optional bytes range_end = 2;
+  // if limit == 0, no striction to the number of kvs
   int64 limit = 3;
   // MVCC: we can read a specific version
   int64 revision = 4;

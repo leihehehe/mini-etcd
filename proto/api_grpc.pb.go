@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KV_Put_FullMethodName   = "/api.KV/Put"
-	KV_Range_FullMethodName = "/api.KV/Range"
-	KV_Watch_FullMethodName = "/api.KV/Watch"
+	KV_Put_FullMethodName    = "/api.KV/Put"
+	KV_Range_FullMethodName  = "/api.KV/Range"
+	KV_Delete_FullMethodName = "/api.KV/Delete"
+	KV_Watch_FullMethodName  = "/api.KV/Watch"
 )
 
 // KVClient is the client API for KV service.
@@ -32,6 +33,7 @@ const (
 type KVClient interface {
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
 	Range(ctx context.Context, in *RangeRequest, opts ...grpc.CallOption) (*RangeResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	Watch(ctx context.Context, in *WatchRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchResponse], error)
 }
 
@@ -57,6 +59,16 @@ func (c *kVClient) Range(ctx context.Context, in *RangeRequest, opts ...grpc.Cal
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RangeResponse)
 	err := c.cc.Invoke(ctx, KV_Range_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *kVClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, KV_Delete_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +102,7 @@ type KV_WatchClient = grpc.ServerStreamingClient[WatchResponse]
 type KVServer interface {
 	Put(context.Context, *PutRequest) (*PutResponse, error)
 	Range(context.Context, *RangeRequest) (*RangeResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	Watch(*WatchRequest, grpc.ServerStreamingServer[WatchResponse]) error
 	mustEmbedUnimplementedKVServer()
 }
@@ -106,6 +119,9 @@ func (UnimplementedKVServer) Put(context.Context, *PutRequest) (*PutResponse, er
 }
 func (UnimplementedKVServer) Range(context.Context, *RangeRequest) (*RangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Range not implemented")
+}
+func (UnimplementedKVServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedKVServer) Watch(*WatchRequest, grpc.ServerStreamingServer[WatchResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -167,6 +183,24 @@ func _KV_Range_Handler(srv interface{}, ctx context.Context, dec func(interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KV_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KVServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KV_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KVServer).Delete(ctx, req.(*DeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KV_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(WatchRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -192,6 +226,10 @@ var KV_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Range",
 			Handler:    _KV_Range_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _KV_Delete_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

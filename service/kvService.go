@@ -124,8 +124,8 @@ func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse
 	return resp, nil
 }
 
-func (s *KvServer) Range(context context.Context, req *pb.RangeRequest) (*pb.RangeResponse, error) {
-	log.Printf("range reqeust: %v", req)
+func (s *KvServer) Range(ctx context.Context, req *pb.RangeRequest) (*pb.RangeResponse, error) {
+	log.Printf("range request: %v", req)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	var kvs []*pb.KeyValue
@@ -166,6 +166,69 @@ func (s *KvServer) Range(context context.Context, req *pb.RangeRequest) (*pb.Ran
 	}
 
 	return s.rangeResp(kvs), nil
+}
+
+func (s *KvServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	log.Printf("delete request: %v", req)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.revision++
+	var deletedCount int64
+	var prevKvs []*pb.KeyValue
+
+	keyStr := string(req.Key)
+	if req.RangeEnd == nil {
+		item := &kvItem{key: keyStr}
+		if existingItem := s.data.Get(item); existingItem != nil {
+			entry := existingItem.(*kvItem).value
+			if req.PrevKey {
+				prevKvs = append(prevKvs, s.getKeyValueFromKvEntry(entry))
+			}
+
+			s.data.Delete(item)
+			deletedCount = 1
+
+			event := &pb.Event{
+				Type: pb.Event_DELETE,
+				Kv:   s.getKeyValueFromKvEntry(entry),
+			}
+			s.watchManager.notify(event)
+		}
+	} else {
+		//range delete
+		startItem := &kvItem{key: keyStr}
+		endItem := &kvItem{key: string(req.RangeEnd)}
+
+		var toDelete []btree.Item
+
+		s.data.AscendRange(startItem, endItem, func(item btree.Item) bool {
+			kfItem := item.(*kvItem).value
+			toDelete = append(toDelete, item)
+			if req.PrevKey {
+				prevKvs = append(prevKvs, s.getKeyValueFromKvEntry(kfItem))
+			}
+			return true
+		})
+
+		for _, item := range toDelete {
+			s.data.Delete(item)
+			deletedCount++
+			event := &pb.Event{
+				Type: pb.Event_DELETE,
+				Kv:   s.getKeyValueFromKvEntry(item.(*kvItem).value),
+			}
+			s.watchManager.notify(event)
+		}
+	}
+
+	return &pb.DeleteResponse{
+		Header: &pb.ResponseHeader{
+			Revision: s.revision,
+		},
+		Deleted: deletedCount,
+		PrevKvs: prevKvs,
+	}, nil
 }
 
 func (s *KvServer) Watch(req *pb.WatchRequest, stream pb.KV_WatchServer) error {

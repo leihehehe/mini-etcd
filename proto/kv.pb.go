@@ -64,7 +64,7 @@ func (x Event_EventType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Event_EventType.Descriptor instead.
 func (Event_EventType) EnumDescriptor() ([]byte, []int) {
-	return file_kv_proto_rawDescGZIP(), []int{9, 0}
+	return file_kv_proto_rawDescGZIP(), []int{11, 0}
 }
 
 type KeyValue struct {
@@ -714,6 +714,129 @@ func (x *WatchResponse) GetEvents() []*Event {
 	return nil
 }
 
+type DeleteRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Key      []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	RangeEnd []byte                 `protobuf:"bytes,2,opt,name=range_end,json=rangeEnd,proto3" json:"range_end,omitempty"`
+	// if prev_key is true, etcd gets the previous key-value pairs before deleting it
+	PrevKey       bool `protobuf:"varint,3,opt,name=prev_key,json=prevKey,proto3" json:"prev_key,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRequest) Reset() {
+	*x = DeleteRequest{}
+	mi := &file_kv_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequest) ProtoMessage() {}
+
+func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRequest) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DeleteRequest) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *DeleteRequest) GetRangeEnd() []byte {
+	if x != nil {
+		return x.RangeEnd
+	}
+	return nil
+}
+
+func (x *DeleteRequest) GetPrevKey() bool {
+	if x != nil {
+		return x.PrevKey
+	}
+	return false
+}
+
+type DeleteResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Header *ResponseHeader        `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	// number of keys deleted by the delete range request
+	Deleted int64 `protobuf:"varint,2,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	// if prev_key is set in the DeleteRequest, the previous key-value pairs will be returned
+	PrevKvs       []*KeyValue `protobuf:"bytes,3,rep,name=prev_kvs,json=prevKvs,proto3" json:"prev_kvs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteResponse) Reset() {
+	*x = DeleteResponse{}
+	mi := &file_kv_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteResponse) ProtoMessage() {}
+
+func (x *DeleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteResponse.ProtoReflect.Descriptor instead.
+func (*DeleteResponse) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *DeleteResponse) GetHeader() *ResponseHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *DeleteResponse) GetDeleted() int64 {
+	if x != nil {
+		return x.Deleted
+	}
+	return 0
+}
+
+func (x *DeleteResponse) GetPrevKvs() []*KeyValue {
+	if x != nil {
+		return x.PrevKvs
+	}
+	return nil
+}
+
 type Event struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          Event_EventType        `protobuf:"varint,1,opt,name=type,proto3,enum=api.Event_EventType" json:"type,omitempty"`
@@ -725,7 +848,7 @@ type Event struct {
 
 func (x *Event) Reset() {
 	*x = Event{}
-	mi := &file_kv_proto_msgTypes[9]
+	mi := &file_kv_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -737,7 +860,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_kv_proto_msgTypes[9]
+	mi := &file_kv_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -750,7 +873,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_kv_proto_rawDescGZIP(), []int{9}
+	return file_kv_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Event) GetType() Event_EventType {
@@ -787,7 +910,7 @@ type ResponseHeader struct {
 
 func (x *ResponseHeader) Reset() {
 	*x = ResponseHeader{}
-	mi := &file_kv_proto_msgTypes[10]
+	mi := &file_kv_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -799,7 +922,7 @@ func (x *ResponseHeader) String() string {
 func (*ResponseHeader) ProtoMessage() {}
 
 func (x *ResponseHeader) ProtoReflect() protoreflect.Message {
-	mi := &file_kv_proto_msgTypes[10]
+	mi := &file_kv_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -812,7 +935,7 @@ func (x *ResponseHeader) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseHeader.ProtoReflect.Descriptor instead.
 func (*ResponseHeader) Descriptor() ([]byte, []int) {
-	return file_kv_proto_rawDescGZIP(), []int{10}
+	return file_kv_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ResponseHeader) GetClusterId() uint64 {
@@ -896,7 +1019,15 @@ const file_kv_proto_rawDesc = "" +
 	"\acreated\x18\x03 \x01(\bR\acreated\x12\x1a\n" +
 	"\bcanceled\x18\x04 \x01(\bR\bcanceled\x12\"\n" +
 	"\x06events\x18\x05 \x03(\v2\n" +
-	".api.EventR\x06events\"\x9a\x01\n" +
+	".api.EventR\x06events\"Y\n" +
+	"\rDeleteRequest\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\fR\x03key\x12\x1b\n" +
+	"\trange_end\x18\x02 \x01(\fR\brangeEnd\x12\x19\n" +
+	"\bprev_key\x18\x03 \x01(\bR\aprevKey\"\x81\x01\n" +
+	"\x0eDeleteResponse\x12+\n" +
+	"\x06header\x18\x01 \x01(\v2\x13.api.ResponseHeaderR\x06header\x12\x18\n" +
+	"\adeleted\x18\x02 \x01(\x03R\adeleted\x12(\n" +
+	"\bprev_kvs\x18\x03 \x03(\v2\r.api.KeyValueR\aprevKvs\"\x9a\x01\n" +
 	"\x05Event\x12(\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x14.api.Event.EventTypeR\x04type\x12\x1d\n" +
 	"\x02kv\x18\x02 \x01(\v2\r.api.KeyValueR\x02kv\x12&\n" +
@@ -925,7 +1056,7 @@ func file_kv_proto_rawDescGZIP() []byte {
 }
 
 var file_kv_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_kv_proto_goTypes = []any{
 	(Event_EventType)(0),       // 0: api.Event.EventType
 	(*KeyValue)(nil),           // 1: api.KeyValue
@@ -937,26 +1068,30 @@ var file_kv_proto_goTypes = []any{
 	(*WatchCreateRequest)(nil), // 7: api.WatchCreateRequest
 	(*WatchCancelRequest)(nil), // 8: api.WatchCancelRequest
 	(*WatchResponse)(nil),      // 9: api.WatchResponse
-	(*Event)(nil),              // 10: api.Event
-	(*ResponseHeader)(nil),     // 11: api.ResponseHeader
+	(*DeleteRequest)(nil),      // 10: api.DeleteRequest
+	(*DeleteResponse)(nil),     // 11: api.DeleteResponse
+	(*Event)(nil),              // 12: api.Event
+	(*ResponseHeader)(nil),     // 13: api.ResponseHeader
 }
 var file_kv_proto_depIdxs = []int32{
-	11, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
+	13, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
 	1,  // 1: api.PutResponse.prev_kv:type_name -> api.KeyValue
-	11, // 2: api.RangeResponse.header:type_name -> api.ResponseHeader
+	13, // 2: api.RangeResponse.header:type_name -> api.ResponseHeader
 	1,  // 3: api.RangeResponse.kvs:type_name -> api.KeyValue
 	7,  // 4: api.WatchRequest.create_request:type_name -> api.WatchCreateRequest
 	8,  // 5: api.WatchRequest.cancel_request:type_name -> api.WatchCancelRequest
-	11, // 6: api.WatchResponse.header:type_name -> api.ResponseHeader
-	10, // 7: api.WatchResponse.events:type_name -> api.Event
-	0,  // 8: api.Event.type:type_name -> api.Event.EventType
-	1,  // 9: api.Event.kv:type_name -> api.KeyValue
-	1,  // 10: api.Event.prev_kv:type_name -> api.KeyValue
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	13, // 6: api.WatchResponse.header:type_name -> api.ResponseHeader
+	12, // 7: api.WatchResponse.events:type_name -> api.Event
+	13, // 8: api.DeleteResponse.header:type_name -> api.ResponseHeader
+	1,  // 9: api.DeleteResponse.prev_kvs:type_name -> api.KeyValue
+	0,  // 10: api.Event.type:type_name -> api.Event.EventType
+	1,  // 11: api.Event.kv:type_name -> api.KeyValue
+	1,  // 12: api.Event.prev_kv:type_name -> api.KeyValue
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_kv_proto_init() }
@@ -975,7 +1110,7 @@ func file_kv_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_kv_proto_rawDesc), len(file_kv_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

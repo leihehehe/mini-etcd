@@ -79,6 +79,21 @@ message WatchResponse{
   repeated Event events = 5;
 }
 
+message DeleteRequest{
+  bytes key = 1;
+  bytes range_end = 2;
+  // if prev_key is true, etcd gets the previous key-value pairs before deleting it
+  bool prev_key = 3;
+}
+
+message DeleteResponse{
+  ResponseHeader header = 1;
+  // number of keys deleted by the delete range request
+  int64 deleted = 2;
+  // if prev_key is set in the DeleteRequest, the previous key-value pairs will be returned
+  repeated KeyValue prev_kvs = 3;
+}
+
 message Event{
   enum EventType{
     PUT = 0;

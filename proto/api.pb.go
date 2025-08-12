@@ -24,29 +24,34 @@ var File_api_proto protoreflect.FileDescriptor
 
 const file_api_proto_rawDesc = "" +
 	"\n" +
-	"\tapi.proto\x12\x03api\x1a\bkv.proto2\x96\x01\n" +
+	"\tapi.proto\x12\x03api\x1a\bkv.proto2\xcb\x01\n" +
 	"\x02KV\x12*\n" +
 	"\x03Put\x12\x0f.api.PutRequest\x1a\x10.api.PutResponse\"\x00\x120\n" +
-	"\x05Range\x12\x11.api.RangeRequest\x1a\x12.api.RangeResponse\"\x00\x122\n" +
+	"\x05Range\x12\x11.api.RangeRequest\x1a\x12.api.RangeResponse\"\x00\x123\n" +
+	"\x06Delete\x12\x12.api.DeleteRequest\x1a\x13.api.DeleteResponse\"\x00\x122\n" +
 	"\x05Watch\x12\x11.api.WatchRequest\x1a\x12.api.WatchResponse\"\x000\x01B\vZ\tapi/protob\x06proto3"
 
 var file_api_proto_goTypes = []any{
-	(*PutRequest)(nil),    // 0: api.PutRequest
-	(*RangeRequest)(nil),  // 1: api.RangeRequest
-	(*WatchRequest)(nil),  // 2: api.WatchRequest
-	(*PutResponse)(nil),   // 3: api.PutResponse
-	(*RangeResponse)(nil), // 4: api.RangeResponse
-	(*WatchResponse)(nil), // 5: api.WatchResponse
+	(*PutRequest)(nil),     // 0: api.PutRequest
+	(*RangeRequest)(nil),   // 1: api.RangeRequest
+	(*DeleteRequest)(nil),  // 2: api.DeleteRequest
+	(*WatchRequest)(nil),   // 3: api.WatchRequest
+	(*PutResponse)(nil),    // 4: api.PutResponse
+	(*RangeResponse)(nil),  // 5: api.RangeResponse
+	(*DeleteResponse)(nil), // 6: api.DeleteResponse
+	(*WatchResponse)(nil),  // 7: api.WatchResponse
 }
 var file_api_proto_depIdxs = []int32{
 	0, // 0: api.KV.Put:input_type -> api.PutRequest
 	1, // 1: api.KV.Range:input_type -> api.RangeRequest
-	2, // 2: api.KV.Watch:input_type -> api.WatchRequest
-	3, // 3: api.KV.Put:output_type -> api.PutResponse
-	4, // 4: api.KV.Range:output_type -> api.RangeResponse
-	5, // 5: api.KV.Watch:output_type -> api.WatchResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	2, // 2: api.KV.Delete:input_type -> api.DeleteRequest
+	3, // 3: api.KV.Watch:input_type -> api.WatchRequest
+	4, // 4: api.KV.Put:output_type -> api.PutResponse
+	5, // 5: api.KV.Range:output_type -> api.RangeResponse
+	6, // 6: api.KV.Delete:output_type -> api.DeleteResponse
+	7, // 7: api.KV.Watch:output_type -> api.WatchResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

@@ -7,5 +7,6 @@ option go_package = "api/proto";
 service KV{
   rpc Put(PutRequest) returns (PutResponse){}
   rpc Range(RangeRequest) returns (RangeResponse){}
+  rpc Delete(DeleteRequest) returns (DeleteResponse){}
   rpc Watch(WatchRequest) returns (stream WatchResponse){}
 }

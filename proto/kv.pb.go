@@ -21,6 +21,52 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Event_EventType int32
+
+const (
+	Event_PUT    Event_EventType = 0
+	Event_DELETE Event_EventType = 1
+)
+
+// Enum value maps for Event_EventType.
+var (
+	Event_EventType_name = map[int32]string{
+		0: "PUT",
+		1: "DELETE",
+	}
+	Event_EventType_value = map[string]int32{
+		"PUT":    0,
+		"DELETE": 1,
+	}
+)
+
+func (x Event_EventType) Enum() *Event_EventType {
+	p := new(Event_EventType)
+	*p = x
+	return p
+}
+
+func (x Event_EventType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Event_EventType) Descriptor() protoreflect.EnumDescriptor {
+	return file_kv_proto_enumTypes[0].Descriptor()
+}
+
+func (Event_EventType) Type() protoreflect.EnumType {
+	return &file_kv_proto_enumTypes[0]
+}
+
+func (x Event_EventType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Event_EventType.Descriptor instead.
+func (Event_EventType) EnumDescriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{9, 0}
+}
+
 type KeyValue struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Key   []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
@@ -253,7 +299,8 @@ type RangeRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Key      []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	RangeEnd []byte                 `protobuf:"bytes,2,opt,name=range_end,json=rangeEnd,proto3,oneof" json:"range_end,omitempty"`
-	Limit    int64                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	// if limit == 0, no striction to the number of kvs
+	Limit int64 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	// MVCC: we can read a specific version
 	Revision int64 `protobuf:"varint,4,opt,name=revision,proto3" json:"revision,omitempty"`
 	// only return keys not ignore values
@@ -395,6 +442,338 @@ func (x *RangeResponse) GetCount() int64 {
 	return 0
 }
 
+type WatchRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to RequestUnion:
+	//
+	//	*WatchRequest_CreateRequest
+	//	*WatchRequest_CancelRequest
+	RequestUnion  isWatchRequest_RequestUnion `protobuf_oneof:"request_union"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchRequest) Reset() {
+	*x = WatchRequest{}
+	mi := &file_kv_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchRequest) ProtoMessage() {}
+
+func (x *WatchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchRequest.ProtoReflect.Descriptor instead.
+func (*WatchRequest) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *WatchRequest) GetRequestUnion() isWatchRequest_RequestUnion {
+	if x != nil {
+		return x.RequestUnion
+	}
+	return nil
+}
+
+func (x *WatchRequest) GetCreateRequest() *WatchCreateRequest {
+	if x != nil {
+		if x, ok := x.RequestUnion.(*WatchRequest_CreateRequest); ok {
+			return x.CreateRequest
+		}
+	}
+	return nil
+}
+
+func (x *WatchRequest) GetCancelRequest() *WatchCancelRequest {
+	if x != nil {
+		if x, ok := x.RequestUnion.(*WatchRequest_CancelRequest); ok {
+			return x.CancelRequest
+		}
+	}
+	return nil
+}
+
+type isWatchRequest_RequestUnion interface {
+	isWatchRequest_RequestUnion()
+}
+
+type WatchRequest_CreateRequest struct {
+	CreateRequest *WatchCreateRequest `protobuf:"bytes,1,opt,name=create_request,json=createRequest,proto3,oneof"`
+}
+
+type WatchRequest_CancelRequest struct {
+	CancelRequest *WatchCancelRequest `protobuf:"bytes,2,opt,name=cancel_request,json=cancelRequest,proto3,oneof"`
+}
+
+func (*WatchRequest_CreateRequest) isWatchRequest_RequestUnion() {}
+
+func (*WatchRequest_CancelRequest) isWatchRequest_RequestUnion() {}
+
+type WatchCreateRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Key      []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	RangeEnd []byte                 `protobuf:"bytes,2,opt,name=range_end,json=rangeEnd,proto3" json:"range_end,omitempty"`
+	// if start_revision == 0, it means we will watch from next revision
+	// if start_revision > 0, it means we will watch from a specific revision
+	StartRevision int64 `protobuf:"varint,3,opt,name=start_revision,json=startRevision,proto3" json:"start_revision,omitempty"`
+	PrevKv        bool  `protobuf:"varint,4,opt,name=prev_kv,json=prevKv,proto3" json:"prev_kv,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchCreateRequest) Reset() {
+	*x = WatchCreateRequest{}
+	mi := &file_kv_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchCreateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchCreateRequest) ProtoMessage() {}
+
+func (x *WatchCreateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchCreateRequest.ProtoReflect.Descriptor instead.
+func (*WatchCreateRequest) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *WatchCreateRequest) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *WatchCreateRequest) GetRangeEnd() []byte {
+	if x != nil {
+		return x.RangeEnd
+	}
+	return nil
+}
+
+func (x *WatchCreateRequest) GetStartRevision() int64 {
+	if x != nil {
+		return x.StartRevision
+	}
+	return 0
+}
+
+func (x *WatchCreateRequest) GetPrevKv() bool {
+	if x != nil {
+		return x.PrevKv
+	}
+	return false
+}
+
+type WatchCancelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WatchId       string                 `protobuf:"bytes,1,opt,name=watch_id,json=watchId,proto3" json:"watch_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchCancelRequest) Reset() {
+	*x = WatchCancelRequest{}
+	mi := &file_kv_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchCancelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchCancelRequest) ProtoMessage() {}
+
+func (x *WatchCancelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchCancelRequest.ProtoReflect.Descriptor instead.
+func (*WatchCancelRequest) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *WatchCancelRequest) GetWatchId() string {
+	if x != nil {
+		return x.WatchId
+	}
+	return ""
+}
+
+type WatchResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Header        *ResponseHeader        `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	WatchId       string                 `protobuf:"bytes,2,opt,name=watch_id,json=watchId,proto3" json:"watch_id,omitempty"`
+	Created       bool                   `protobuf:"varint,3,opt,name=created,proto3" json:"created,omitempty"`
+	Canceled      bool                   `protobuf:"varint,4,opt,name=canceled,proto3" json:"canceled,omitempty"`
+	Events        []*Event               `protobuf:"bytes,5,rep,name=events,proto3" json:"events,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchResponse) Reset() {
+	*x = WatchResponse{}
+	mi := &file_kv_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchResponse) ProtoMessage() {}
+
+func (x *WatchResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchResponse.ProtoReflect.Descriptor instead.
+func (*WatchResponse) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *WatchResponse) GetHeader() *ResponseHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *WatchResponse) GetWatchId() string {
+	if x != nil {
+		return x.WatchId
+	}
+	return ""
+}
+
+func (x *WatchResponse) GetCreated() bool {
+	if x != nil {
+		return x.Created
+	}
+	return false
+}
+
+func (x *WatchResponse) GetCanceled() bool {
+	if x != nil {
+		return x.Canceled
+	}
+	return false
+}
+
+func (x *WatchResponse) GetEvents() []*Event {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
+type Event struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          Event_EventType        `protobuf:"varint,1,opt,name=type,proto3,enum=api.Event_EventType" json:"type,omitempty"`
+	Kv            *KeyValue              `protobuf:"bytes,2,opt,name=kv,proto3" json:"kv,omitempty"`
+	PrevKv        *KeyValue              `protobuf:"bytes,3,opt,name=prev_kv,json=prevKv,proto3" json:"prev_kv,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Event) Reset() {
+	*x = Event{}
+	mi := &file_kv_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Event) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Event) ProtoMessage() {}
+
+func (x *Event) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Event.ProtoReflect.Descriptor instead.
+func (*Event) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *Event) GetType() Event_EventType {
+	if x != nil {
+		return x.Type
+	}
+	return Event_PUT
+}
+
+func (x *Event) GetKv() *KeyValue {
+	if x != nil {
+		return x.Kv
+	}
+	return nil
+}
+
+func (x *Event) GetPrevKv() *KeyValue {
+	if x != nil {
+		return x.PrevKv
+	}
+	return nil
+}
+
 type ResponseHeader struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ClusterId uint64                 `protobuf:"varint,1,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty"`
@@ -408,7 +787,7 @@ type ResponseHeader struct {
 
 func (x *ResponseHeader) Reset() {
 	*x = ResponseHeader{}
-	mi := &file_kv_proto_msgTypes[5]
+	mi := &file_kv_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -420,7 +799,7 @@ func (x *ResponseHeader) String() string {
 func (*ResponseHeader) ProtoMessage() {}
 
 func (x *ResponseHeader) ProtoReflect() protoreflect.Message {
-	mi := &file_kv_proto_msgTypes[5]
+	mi := &file_kv_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -433,7 +812,7 @@ func (x *ResponseHeader) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseHeader.ProtoReflect.Descriptor instead.
 func (*ResponseHeader) Descriptor() ([]byte, []int) {
-	return file_kv_proto_rawDescGZIP(), []int{5}
+	return file_kv_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ResponseHeader) GetClusterId() uint64 {
@@ -499,7 +878,33 @@ const file_kv_proto_rawDesc = "" +
 	"\x06header\x18\x01 \x01(\v2\x13.api.ResponseHeaderR\x06header\x12\x1f\n" +
 	"\x03kvs\x18\x02 \x03(\v2\r.api.KeyValueR\x03kvs\x12\x12\n" +
 	"\x04more\x18\x03 \x01(\bR\x04more\x12\x14\n" +
-	"\x05count\x18\x04 \x01(\x03R\x05count\"\x85\x01\n" +
+	"\x05count\x18\x04 \x01(\x03R\x05count\"\xa3\x01\n" +
+	"\fWatchRequest\x12@\n" +
+	"\x0ecreate_request\x18\x01 \x01(\v2\x17.api.WatchCreateRequestH\x00R\rcreateRequest\x12@\n" +
+	"\x0ecancel_request\x18\x02 \x01(\v2\x17.api.WatchCancelRequestH\x00R\rcancelRequestB\x0f\n" +
+	"\rrequest_union\"\x83\x01\n" +
+	"\x12WatchCreateRequest\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\fR\x03key\x12\x1b\n" +
+	"\trange_end\x18\x02 \x01(\fR\brangeEnd\x12%\n" +
+	"\x0estart_revision\x18\x03 \x01(\x03R\rstartRevision\x12\x17\n" +
+	"\aprev_kv\x18\x04 \x01(\bR\x06prevKv\"/\n" +
+	"\x12WatchCancelRequest\x12\x19\n" +
+	"\bwatch_id\x18\x01 \x01(\tR\awatchId\"\xb1\x01\n" +
+	"\rWatchResponse\x12+\n" +
+	"\x06header\x18\x01 \x01(\v2\x13.api.ResponseHeaderR\x06header\x12\x19\n" +
+	"\bwatch_id\x18\x02 \x01(\tR\awatchId\x12\x18\n" +
+	"\acreated\x18\x03 \x01(\bR\acreated\x12\x1a\n" +
+	"\bcanceled\x18\x04 \x01(\bR\bcanceled\x12\"\n" +
+	"\x06events\x18\x05 \x03(\v2\n" +
+	".api.EventR\x06events\"\x9a\x01\n" +
+	"\x05Event\x12(\n" +
+	"\x04type\x18\x01 \x01(\x0e2\x14.api.Event.EventTypeR\x04type\x12\x1d\n" +
+	"\x02kv\x18\x02 \x01(\v2\r.api.KeyValueR\x02kv\x12&\n" +
+	"\aprev_kv\x18\x03 \x01(\v2\r.api.KeyValueR\x06prevKv\" \n" +
+	"\tEventType\x12\a\n" +
+	"\x03PUT\x10\x00\x12\n" +
+	"\n" +
+	"\x06DELETE\x10\x01\"\x85\x01\n" +
 	"\x0eResponseHeader\x12\x1d\n" +
 	"\n" +
 	"cluster_id\x18\x01 \x01(\x04R\tclusterId\x12\x1b\n" +
@@ -519,25 +924,39 @@ func file_kv_proto_rawDescGZIP() []byte {
 	return file_kv_proto_rawDescData
 }
 
-var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_kv_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_kv_proto_goTypes = []any{
-	(*KeyValue)(nil),       // 0: api.KeyValue
-	(*PutRequest)(nil),     // 1: api.PutRequest
-	(*PutResponse)(nil),    // 2: api.PutResponse
-	(*RangeRequest)(nil),   // 3: api.RangeRequest
-	(*RangeResponse)(nil),  // 4: api.RangeResponse
-	(*ResponseHeader)(nil), // 5: api.ResponseHeader
+	(Event_EventType)(0),       // 0: api.Event.EventType
+	(*KeyValue)(nil),           // 1: api.KeyValue
+	(*PutRequest)(nil),         // 2: api.PutRequest
+	(*PutResponse)(nil),        // 3: api.PutResponse
+	(*RangeRequest)(nil),       // 4: api.RangeRequest
+	(*RangeResponse)(nil),      // 5: api.RangeResponse
+	(*WatchRequest)(nil),       // 6: api.WatchRequest
+	(*WatchCreateRequest)(nil), // 7: api.WatchCreateRequest
+	(*WatchCancelRequest)(nil), // 8: api.WatchCancelRequest
+	(*WatchResponse)(nil),      // 9: api.WatchResponse
+	(*Event)(nil),              // 10: api.Event
+	(*ResponseHeader)(nil),     // 11: api.ResponseHeader
 }
 var file_kv_proto_depIdxs = []int32{
-	5, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
-	0, // 1: api.PutResponse.prev_kv:type_name -> api.KeyValue
-	5, // 2: api.RangeResponse.header:type_name -> api.ResponseHeader
-	0, // 3: api.RangeResponse.kvs:type_name -> api.KeyValue
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	11, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
+	1,  // 1: api.PutResponse.prev_kv:type_name -> api.KeyValue
+	11, // 2: api.RangeResponse.header:type_name -> api.ResponseHeader
+	1,  // 3: api.RangeResponse.kvs:type_name -> api.KeyValue
+	7,  // 4: api.WatchRequest.create_request:type_name -> api.WatchCreateRequest
+	8,  // 5: api.WatchRequest.cancel_request:type_name -> api.WatchCancelRequest
+	11, // 6: api.WatchResponse.header:type_name -> api.ResponseHeader
+	10, // 7: api.WatchResponse.events:type_name -> api.Event
+	0,  // 8: api.Event.type:type_name -> api.Event.EventType
+	1,  // 9: api.Event.kv:type_name -> api.KeyValue
+	1,  // 10: api.Event.prev_kv:type_name -> api.KeyValue
+	11, // [11:11] is the sub-list for method output_type
+	11, // [11:11] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_kv_proto_init() }
@@ -546,18 +965,23 @@ func file_kv_proto_init() {
 		return
 	}
 	file_kv_proto_msgTypes[3].OneofWrappers = []any{}
+	file_kv_proto_msgTypes[5].OneofWrappers = []any{
+		(*WatchRequest_CreateRequest)(nil),
+		(*WatchRequest_CancelRequest)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_kv_proto_rawDesc), len(file_kv_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   6,
+			NumEnums:      1,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_kv_proto_goTypes,
 		DependencyIndexes: file_kv_proto_depIdxs,
+		EnumInfos:         file_kv_proto_enumTypes,
 		MessageInfos:      file_kv_proto_msgTypes,
 	}.Build()
 	File_kv_proto = out.File

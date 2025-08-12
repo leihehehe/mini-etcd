@@ -51,6 +51,44 @@ message RangeResponse{
   int64 count = 4;
 }
 
+message WatchRequest{
+  oneof request_union{
+    WatchCreateRequest create_request = 1;
+    WatchCancelRequest cancel_request = 2;
+  }
+}
+
+message WatchCreateRequest{
+  bytes key = 1;
+  bytes range_end = 2;
+  //if start_revision == 0, it means we will watch from next revision
+  //if start_revision > 0, it means we will watch from a specific revision
+  int64 start_revision = 3;
+  bool prev_kv = 4;
+}
+
+message WatchCancelRequest{
+  string watch_id = 1;
+}
+
+message WatchResponse{
+  ResponseHeader header = 1;
+  string watch_id = 2;
+  bool created = 3;
+  bool canceled = 4;
+  repeated Event events = 5;
+}
+
+message Event{
+  enum EventType{
+    PUT = 0;
+    DELETE = 1;
+  }
+  EventType type = 1;
+  KeyValue kv = 2;
+  KeyValue prev_kv = 3;
+}
+
 message ResponseHeader{
   uint64 cluster_id = 1;
   uint64 member_id = 2;

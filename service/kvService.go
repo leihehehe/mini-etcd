@@ -82,15 +82,23 @@ func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse
 		}
 
 	} else {
+		var val []byte
+		var lease int64
+		if !req.IgnoreValue {
+			val = append([]byte(nil), req.Value...)
+		}
+		if !req.IgnoreLease {
+			lease = req.Lease
+		}
 		newItem := &kvItem{
 			key: keyStr,
 			value: &kvEntry{
 				key:            string(req.Key),
-				val:            append([]byte(nil), req.Value...),
+				val:            val,
 				createRevision: s.revision,
 				modRevision:    s.revision,
 				version:        1,
-				lease:          req.Lease,
+				lease:          lease,
 			},
 		}
 		s.data.ReplaceOrInsert(newItem)
@@ -99,11 +107,11 @@ func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse
 			Type: pb.Event_PUT,
 			Kv: &pb.KeyValue{
 				Key:            append([]byte(nil), req.Key...),
-				Value:          append([]byte(nil), req.Value...),
+				Value:          val,
 				CreateRevision: s.revision,
 				ModRevision:    s.revision,
 				Version:        1,
-				Lease:          req.Lease,
+				Lease:          lease,
 			},
 			PrevKv: nil,
 		}

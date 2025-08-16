@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	pb "mini-etcd/proto"
-	"mini-etcd/service"
 	"sync"
 	"testing"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func TestPut_WithoutPrevKV(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	req := &pb.PutRequest{
 		Key:   []byte("key"),
 		Value: []byte("value"),
@@ -28,7 +27,7 @@ func TestPut_WithoutPrevKV(t *testing.T) {
 }
 
 func TestPut_WithPrevKV_WhenNewKey(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	req := &pb.PutRequest{
 		Key:    []byte("key"),
 		Value:  []byte("value"),
@@ -44,7 +43,7 @@ func TestPut_WithPrevKV_WhenNewKey(t *testing.T) {
 }
 
 func TestPut_WithPrevKV_WhenExistingKey(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	//first request
 	req := &pb.PutRequest{
@@ -76,7 +75,7 @@ func TestPut_WithPrevKV_WhenExistingKey(t *testing.T) {
 	assert.Equal(t, resp2.PrevKv.Value, []byte("value"))
 }
 func TestPut_IgnoreValue(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	req1 := &pb.PutRequest{
 		Key:   []byte("test-key"),
@@ -111,7 +110,7 @@ func TestPut_IgnoreValue(t *testing.T) {
 }
 
 func TestPut_IgnoreValue_NewKey(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	req := &pb.PutRequest{
 		Key:         []byte("new-key"),
@@ -134,7 +133,7 @@ func TestPut_IgnoreValue_NewKey(t *testing.T) {
 }
 
 func TestPut_IgnoreLease(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	// First, put a key with initial lease
 	req1 := &pb.PutRequest{
@@ -172,7 +171,7 @@ func TestPut_IgnoreLease(t *testing.T) {
 }
 
 func TestPut_IgnoreBoth(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	// First, put a key with initial values
 	req1 := &pb.PutRequest{
@@ -212,7 +211,7 @@ func TestPut_IgnoreBoth(t *testing.T) {
 }
 
 func TestPut_WithLease(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	req := &pb.PutRequest{
 		Key:   []byte("lease-key"),
@@ -233,7 +232,7 @@ func TestPut_WithLease(t *testing.T) {
 }
 
 func TestPut_ConcurrentWrites(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	numGoroutines := 10
 	numOperations := 100
 
@@ -272,7 +271,7 @@ func TestPut_ConcurrentWrites(t *testing.T) {
 }
 
 func TestPut_ConcurrentWritesToSameKey(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	numGoroutines := 10
 
 	var wg sync.WaitGroup

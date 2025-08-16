@@ -3,7 +3,6 @@ package unit
 import (
 	"context"
 	pb "mini-etcd/proto"
-	"mini-etcd/service"
 	"sync"
 	"testing"
 	"time"
@@ -48,7 +47,7 @@ func (m *mockWatchStream) getSentMessages() []*pb.WatchResponse {
 }
 
 func TestWatch_CreateWatcher(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -83,7 +82,7 @@ func TestWatch_CreateWatcher(t *testing.T) {
 }
 
 func TestWatch_SingleKeyEvents(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -160,7 +159,7 @@ func TestWatch_SingleKeyEvents(t *testing.T) {
 }
 
 func TestWatch_PrefixWatchEvents(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -209,7 +208,7 @@ func TestWatch_PrefixWatchEvents(t *testing.T) {
 }
 
 func TestWatch_WithPrevKv(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	// First, put a key
 	putReq := &pb.PutRequest{
@@ -272,7 +271,7 @@ func TestWatch_WithPrevKv(t *testing.T) {
 }
 
 func TestWatch_CancelWatcher(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	ctx := context.Background()
 
 	stream := newMockWatchStream(ctx)
@@ -318,7 +317,7 @@ func TestWatch_CancelWatcher(t *testing.T) {
 }
 
 func TestWatch_MultipleWatchers(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

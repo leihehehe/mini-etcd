@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"log"
+	"mini-etcd/internal"
 	pb "mini-etcd/proto"
+	"mini-etcd/storage"
 	"sync"
 
 	"github.com/google/btree"
@@ -17,6 +19,7 @@ type KvServer struct {
 	data         *btree.BTree
 	revision     int64
 	watchManager *WatcherManager
+	wal          *storage.WAL
 }
 
 type kvEntry struct {
@@ -38,18 +41,43 @@ func (item *kvItem) Less(than btree.Item) bool {
 	return item.key < than.(*kvItem).key
 }
 
-func NewKVServer() *KvServer {
+func NewKVServer(dataDir ...string) *KvServer {
 	kvServer := &KvServer{
-		data: btree.New(64),
+		data:         btree.New(internal.BTreeDegree),
+		watchManager: NewWatcherManager(),
 	}
-	kvServer.watchManager = NewWatcherManager()
+	dir := internal.DefaultDataDir
+	if len(dataDir) > 0 && dataDir[0] != "" {
+		dir = dataDir[0]
+	}
+	if wal, err := storage.NewWAL(dir); err == nil {
+		kvServer.wal = wal
+		if err := kvServer.recoverFromWAL(); err != nil {
+			log.Fatalf("failed to recover from WAL: %v", err)
+		} else {
+			log.Printf("Successfully recovered from WAL, current revision:%d", kvServer.revision)
+		}
+	}
 	return kvServer
 }
 
 func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
-	log.Printf("put request: %v", req)
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	//WAL
+	if s.wal != nil {
+		entry := storage.WALEntry{
+			Type:     internal.OpTypePut,
+			Key:      req.Key,
+			Value:    req.Value,
+			Revision: s.revision + 1,
+		}
+		if err := s.wal.Write(&entry); err != nil {
+			return nil, err
+		}
+	}
+
+	//update b-tree
 	s.revision++
 	keyStr := string(req.Key)
 	item := &kvItem{key: keyStr}
@@ -180,8 +208,22 @@ func (s *KvServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Delet
 	log.Printf("delete request: %v", req)
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
 	s.revision++
+
+	//wal
+	if s.wal != nil {
+		walEntry := &storage.WALEntry{
+			Type:     internal.OpTypeDelete,
+			Key:      req.Key,
+			Value:    nil,
+			Revision: s.revision,
+		}
+		if err := s.wal.Write(walEntry); err != nil {
+			log.Printf("failed to write wal entry: %v", err)
+			return nil, err
+		}
+	}
+
 	var deletedCount int64
 	var prevKvs []*pb.KeyValue
 
@@ -364,4 +406,56 @@ func (s *KvServer) getKeyValueFromKvEntry(entry *kvEntry) *pb.KeyValue {
 		Version:        entry.version,
 		Lease:          entry.lease,
 	}
+}
+
+func (s *KvServer) recoverFromWAL() error {
+	if s.wal == nil {
+		return nil
+	}
+	entries, err := s.wal.Read()
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		switch entry.Type {
+		case internal.OpTypePut:
+			item := &kvItem{
+				key: string(entry.Key),
+				value: &kvEntry{
+					key:            string(entry.Key),
+					val:            entry.Value,
+					createRevision: entry.Revision,
+					modRevision:    entry.Revision,
+					version:        1,
+					lease:          0,
+				},
+			}
+			s.mu.Lock()
+			s.data.ReplaceOrInsert(item)
+			if entry.Revision > s.revision {
+				s.revision = entry.Revision
+			}
+			s.mu.Unlock()
+		case internal.OpTypeDelete:
+			item := &kvItem{
+				key: string(entry.Key),
+			}
+			s.mu.Lock()
+			s.data.Delete(item)
+			if entry.Revision > s.revision {
+				s.revision = entry.Revision
+			}
+			s.mu.Unlock()
+		}
+	}
+	return nil
+}
+
+func (s *KvServer) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.wal != nil {
+		return s.wal.Close()
+	}
+	return nil
 }

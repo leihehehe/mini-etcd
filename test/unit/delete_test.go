@@ -8,11 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	pb "mini-etcd/proto"
-	"mini-etcd/service"
 )
 
 func TestDelete_SingleKey_Found(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	putReq := &pb.PutRequest{
 		Key:   []byte("test-key"),
@@ -31,7 +30,7 @@ func TestDelete_SingleKey_Found(t *testing.T) {
 }
 
 func TestDelete_SingleKey_NotFound(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	deleteReq := &pb.DeleteRequest{
 		Key: []byte("non-existent"),
@@ -43,7 +42,7 @@ func TestDelete_SingleKey_NotFound(t *testing.T) {
 }
 
 func TestDelete_WithPrevKv(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	putReq := &pb.PutRequest{
 		Key:   []byte("test-key"),
@@ -65,7 +64,7 @@ func TestDelete_WithPrevKv(t *testing.T) {
 }
 
 func TestDelete_RangeDelete(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	keys := []string{"config/app1/db", "config/app1/cache", "config/app2/db"}
 	for _, key := range keys {

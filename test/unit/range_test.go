@@ -37,7 +37,7 @@ func setupTestData(server *service.KvServer) {
 }
 
 func TestRange_SingleKey_Found(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -53,7 +53,7 @@ func TestRange_SingleKey_Found(t *testing.T) {
 }
 
 func TestRange_SingleKey_NotFound(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -67,7 +67,7 @@ func TestRange_SingleKey_NotFound(t *testing.T) {
 }
 
 func TestRange_PrefixQuery(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -88,7 +88,7 @@ func TestRange_PrefixQuery(t *testing.T) {
 }
 
 func TestRange_WithLimit(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -104,7 +104,7 @@ func TestRange_WithLimit(t *testing.T) {
 }
 
 func TestRange_KeysOnly(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -123,7 +123,7 @@ func TestRange_KeysOnly(t *testing.T) {
 }
 
 func TestRange_NegativeLimit(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -138,7 +138,7 @@ func TestRange_NegativeLimit(t *testing.T) {
 }
 
 func TestRange_WithRevision_MVCC(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	req1 := &pb.PutRequest{
 		Key:   []byte("test-key"),
@@ -166,7 +166,7 @@ func TestRange_WithRevision_MVCC(t *testing.T) {
 }
 
 func TestRange_EmptyKey(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -180,7 +180,7 @@ func TestRange_EmptyKey(t *testing.T) {
 }
 
 func TestRange_InvalidRevision(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	// Put one key to create revision 1
 	putReq := &pb.PutRequest{
@@ -203,7 +203,7 @@ func TestRange_InvalidRevision(t *testing.T) {
 }
 
 func TestRange_ZeroLimit(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -218,7 +218,7 @@ func TestRange_ZeroLimit(t *testing.T) {
 }
 
 func TestRange_LargeLimit(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	req := &pb.RangeRequest{
@@ -233,7 +233,7 @@ func TestRange_LargeLimit(t *testing.T) {
 }
 
 func TestRange_ConcurrentReads(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	setupTestData(server)
 
 	numGoroutines := 20
@@ -280,7 +280,7 @@ func TestRange_ConcurrentReads(t *testing.T) {
 }
 
 func TestRange_HistoricalRevision(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	// Put initial value
 	putReq1 := &pb.PutRequest{
@@ -317,7 +317,7 @@ func TestRange_HistoricalRevision(t *testing.T) {
 }
 
 func TestRange_AllKeys(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
 	// Put keys with different prefixes
 	keys := []string{
@@ -348,11 +348,9 @@ func TestRange_AllKeys(t *testing.T) {
 	assert.Len(t, resp.Kvs, len(keys))
 }
 
-// 更安全的并发测试
 func TestRange_LightConcurrency(t *testing.T) {
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 
-	// 先设置一些初始数据
 	for i := 0; i < 10; i++ {
 		putReq := &pb.PutRequest{
 			Key:   []byte(fmt.Sprintf("initial-key-%d", i)),
@@ -369,7 +367,6 @@ func TestRange_LightConcurrency(t *testing.T) {
 	results := make([]int64, numReaders)
 	errors := make([]error, numReaders)
 
-	// 只进行读操作，避免读写锁竞争
 	for i := 0; i < numReaders; i++ {
 		go func(index int) {
 			defer wg.Done()

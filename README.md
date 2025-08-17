@@ -7,12 +7,12 @@ snapshot persistence, MVCC state machine, linearizable KV & Watch API.
 
 ## 🚦Project Phases
 
-| Phase                    | Target                                     | Deliverables                                         |
-|--------------------------|--------------------------------------------|------------------------------------------------------|
-| **0. Local KV (DONE)**   | Fast in‑memory B‑Tree with MVCC            | `PUT / GET / DELETE / RANGE / WATCH` over gRPC       |
-| **1. Durability (WIP)**  | **WAL** + **snapshots** for crash recovery | Automatic replay at startup                          |
-| **2. High Availability** | **Single Raft Group** (3–5 nodes)          | Leader election, log replication, strong consistency |
-| **3. Production Polish** | CLI, Web UI                                | Ops‑friendly experience                              |
+| Phase                         | Target                                     | Deliverables                                         |
+|-------------------------------|--------------------------------------------|------------------------------------------------------|
+| **0. Local KV (DONE)**        | Fast in‑memory B‑Tree with MVCC            | `PUT / GET / DELETE / RANGE / WATCH` over gRPC       |
+| **1. Durability (DONE)**      | **WAL** + **snapshots** for crash recovery | Automatic replay at startup                          |
+| **2. High Availability(WIP)** | **Single Raft Group** (3–5 nodes)          | Leader election, log replication, strong consistency |
+| **3. Production Polish**      | CLI, Web UI                                | Ops‑friendly experience                              |
 
 > **Why this order?**Build a correct single‑node database → make it durable → replicate via Raft → refine UX & security.
 
@@ -57,21 +57,21 @@ snapshot persistence, MVCC state machine, linearizable KV & Watch API.
 
 ---
 
-## ✨ Current Feature Set (Phase 0)
+## ✨ Current Feature Set (Phase 0 & Phase 1)
 
 * **Google B‑Tree** (degree 64) → *O(logn)* read/write
 * **MVCC** with global `revision` & per‑key versioning
 * **gRPC v3‑subset** (`Put / Range / DeleteRange / Watch`)
 * **Concurrency** via `sync.RWMutex` + goroutines; non‑blocking watch fan‑out
 * **Deterministic state‑machine** interface ready for Raft integration
-
----
-
-## 🔜 Near‑Term TODO (Phase 1 & 2)
-
 * **Write‑Ahead Log (WAL)** – protobuf‑framed, `fsync` on commit
 * **Snapshots & Compaction** – periodic full dump, WAL truncation, defrag API
 * **Crash Recovery** – snapshot load → WAL replay → serve
+
+---
+
+## 🔜 Near‑Term TODO (Phase 2 & 3)
+
 * **Single‑Group Raft** – integrate `raft`; election, log replication, ReadIndex path
 * **Health & Metrics** – `/health`, Prometheus counters
 * **Chaos Tests** – kill‑9, network partition; target failover <2 s

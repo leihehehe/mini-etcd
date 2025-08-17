@@ -7,6 +7,7 @@ import (
 	pb "mini-etcd/proto"
 	"mini-etcd/storage"
 	"sync"
+	"time"
 
 	"github.com/google/btree"
 	"google.golang.org/grpc/codes"
@@ -15,11 +16,13 @@ import (
 
 type KvServer struct {
 	pb.UnimplementedKVServer
-	mu           sync.RWMutex
-	data         *btree.BTree
-	revision     int64
-	watchManager *WatcherManager
-	wal          *storage.WAL
+	mu              sync.RWMutex
+	data            *btree.BTree
+	revision        int64
+	watchManager    *WatcherManager
+	walManager      *storage.WALManager
+	snapshotManager *storage.SnapshotManager
+	walEntryCount   int64
 }
 
 type kvEntry struct {
@@ -42,37 +45,40 @@ func (item *kvItem) Less(than btree.Item) bool {
 }
 
 func NewKVServer(dataDir ...string) *KvServer {
-	kvServer := &KvServer{
-		data:         btree.New(internal.BTreeDegree),
-		watchManager: NewWatcherManager(),
-	}
 	dir := internal.DefaultDataDir
 	if len(dataDir) > 0 && dataDir[0] != "" {
 		dir = dataDir[0]
 	}
-	if wal, err := storage.NewWAL(dir); err == nil {
-		kvServer.wal = wal
-		if err := kvServer.recoverFromWAL(); err != nil {
-			log.Fatalf("failed to recover from WAL: %v", err)
-		} else {
-			log.Printf("Successfully recovered from WAL, current revision:%d", kvServer.revision)
+
+	kvServer := &KvServer{
+		data:            btree.New(internal.BTreeDegree),
+		watchManager:    NewWatcherManager(),
+		snapshotManager: storage.NewSnapshotManager(dir),
+		walEntryCount:   0,
+	}
+
+	if wal, err := storage.NewWALManager(dir); err == nil {
+		kvServer.walManager = wal
+		if err := kvServer.recover(); err != nil {
+			println("fail to recover data")
 		}
 	}
+
 	return kvServer
 }
 
 func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	//WAL
-	if s.wal != nil {
+	//WALManager
+	if s.walManager != nil {
 		entry := storage.WALEntry{
 			Type:     internal.OpTypePut,
 			Key:      req.Key,
 			Value:    req.Value,
 			Revision: s.revision + 1,
 		}
-		if err := s.wal.Write(&entry); err != nil {
+		if err := s.walManager.Write(&entry); err != nil {
 			return nil, err
 		}
 	}
@@ -157,7 +163,20 @@ func (s *KvServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse
 		s.watchManager.notify(event)
 	}
 
+	s.updateSnapshot()
 	return resp, nil
+}
+
+func (s *KvServer) updateSnapshot() {
+	s.walEntryCount++
+	if s.walEntryCount >= internal.DefaultSnapshotThreshold {
+		s.walEntryCount = 0
+		go func() {
+			if err := s.createSnapshot(); err != nil {
+				log.Printf("fail to create snapshot %v", err)
+			}
+		}()
+	}
 }
 
 func (s *KvServer) Range(ctx context.Context, req *pb.RangeRequest) (*pb.RangeResponse, error) {
@@ -210,16 +229,16 @@ func (s *KvServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Delet
 	defer s.mu.Unlock()
 	s.revision++
 
-	//wal
-	if s.wal != nil {
+	//walManager
+	if s.walManager != nil {
 		walEntry := &storage.WALEntry{
 			Type:     internal.OpTypeDelete,
 			Key:      req.Key,
 			Value:    nil,
 			Revision: s.revision,
 		}
-		if err := s.wal.Write(walEntry); err != nil {
-			log.Printf("failed to write wal entry: %v", err)
+		if err := s.walManager.Write(walEntry); err != nil {
+			log.Printf("failed to write walManager entry: %v", err)
 			return nil, err
 		}
 	}
@@ -271,6 +290,8 @@ func (s *KvServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Delet
 			s.watchManager.notify(event)
 		}
 	}
+
+	s.updateSnapshot()
 
 	return &pb.DeleteResponse{
 		Header: &pb.ResponseHeader{
@@ -408,15 +429,18 @@ func (s *KvServer) getKeyValueFromKvEntry(entry *kvEntry) *pb.KeyValue {
 	}
 }
 
-func (s *KvServer) recoverFromWAL() error {
-	if s.wal == nil {
+func (s *KvServer) recoverFromWAL(afterRevision int64) error {
+	if s.walManager == nil {
 		return nil
 	}
-	entries, err := s.wal.Read()
+	entries, err := s.walManager.Read()
 	if err != nil {
 		return err
 	}
 	for _, entry := range entries {
+		if entry.Revision <= afterRevision {
+			continue
+		}
 		switch entry.Type {
 		case internal.OpTypePut:
 			item := &kvItem{
@@ -454,8 +478,81 @@ func (s *KvServer) recoverFromWAL() error {
 func (s *KvServer) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.wal != nil {
-		return s.wal.Close()
+	if s.walManager != nil {
+		return s.walManager.Close()
+	}
+	return nil
+}
+
+func (s *KvServer) createSnapshot() error {
+	s.mu.Lock()
+	var kvs []*pb.KeyValue
+	s.data.Ascend(func(item btree.Item) bool {
+		entry := item.(*kvItem).value
+		kvs = append(kvs, &pb.KeyValue{
+			Key:            []byte(entry.key),
+			Value:          append([]byte(nil), entry.val...),
+			CreateRevision: entry.createRevision,
+			ModRevision:    entry.modRevision,
+			Version:        entry.version,
+			Lease:          entry.lease,
+		})
+		return true
+	})
+	currentRevision := s.revision
+	s.mu.Unlock()
+
+	snapshot := &pb.Snapshot{
+		Revision:  currentRevision,
+		CreatedAt: time.Now().Unix(),
+		Kvs:       kvs,
+	}
+	if err := s.snapshotManager.CreateSnapshot(snapshot, currentRevision); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *KvServer) loadSnapshot() (int64, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	snapshot, err := s.snapshotManager.LoadLatestSnapshot()
+	if err != nil {
+		return 0, err
+	}
+
+	if snapshot == nil {
+		return 0, nil
+	}
+	//load the snapshot to b-tree
+	s.data = btree.New(internal.BTreeDegree)
+	s.revision = snapshot.Revision
+
+	for _, kv := range snapshot.Kvs {
+		item := &kvItem{
+			key: string(kv.Key),
+			value: &kvEntry{
+				key:            string(kv.Key),
+				val:            kv.Value,
+				createRevision: kv.CreateRevision,
+				modRevision:    kv.ModRevision,
+				version:        kv.Version,
+				lease:          kv.Lease,
+			},
+		}
+		s.data.ReplaceOrInsert(item)
+	}
+	return snapshot.Revision, nil
+}
+
+func (s *KvServer) recover() error {
+	snapshotRevision, err := s.loadSnapshot()
+	if err != nil {
+		return err
+	}
+	if err := s.recoverFromWAL(snapshotRevision); err != nil {
+		return err
 	}
 	return nil
 }

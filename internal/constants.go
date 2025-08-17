@@ -13,3 +13,10 @@ const (
 	OpTypeDelete = "DELETE"
 	OpTypeRange  = "RANGE"
 )
+
+const (
+	SnapshotFilePrefix = "snapshot"
+	SnapshotFileExt    = ".snap"
+	// DefaultSnapshotThreshold create snapshot when WAL entries exceed this threshold
+	DefaultSnapshotThreshold = 10
+)

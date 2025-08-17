@@ -111,3 +111,9 @@ message ResponseHeader{
   int64 revision = 3;
   uint64 raft_term = 4;
 }
+
+message Snapshot{
+  int64 revision = 1;
+  int64 created_at = 2;
+  repeated KeyValue kvs = 3;
+}

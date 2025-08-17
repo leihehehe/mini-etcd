@@ -2,20 +2,17 @@ package unit
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	pb "mini-etcd/proto"
-	"mini-etcd/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestWAL_PersistencePutGet(t *testing.T) {
-	defer os.RemoveAll("data")
 
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	defer server.Close()
 
 	putReq := &pb.PutRequest{
@@ -27,7 +24,7 @@ func TestWAL_PersistencePutGet(t *testing.T) {
 
 	server.Close()
 
-	server2 := service.NewKVServer()
+	server2 := NewTestKvServer(t)
 	defer server2.Close()
 
 	rangeReq := &pb.RangeRequest{
@@ -40,9 +37,8 @@ func TestWAL_PersistencePutGet(t *testing.T) {
 }
 
 func TestWAL_PersistenceDelete(t *testing.T) {
-	defer os.RemoveAll("data")
 
-	server := service.NewKVServer()
+	server := NewTestKvServer(t)
 	defer server.Close()
 
 	putReq := &pb.PutRequest{
@@ -59,7 +55,7 @@ func TestWAL_PersistenceDelete(t *testing.T) {
 	require.NoError(t, err)
 
 	server.Close()
-	server2 := service.NewKVServer()
+	server2 := NewTestKvServer(t)
 	defer server2.Close()
 
 	rangeReq := &pb.RangeRequest{

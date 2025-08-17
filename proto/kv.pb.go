@@ -966,6 +966,66 @@ func (x *ResponseHeader) GetRaftTerm() uint64 {
 	return 0
 }
 
+type Snapshot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Revision      int64                  `protobuf:"varint,1,opt,name=revision,proto3" json:"revision,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Kvs           []*KeyValue            `protobuf:"bytes,3,rep,name=kvs,proto3" json:"kvs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Snapshot) Reset() {
+	*x = Snapshot{}
+	mi := &file_kv_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Snapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Snapshot) ProtoMessage() {}
+
+func (x *Snapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_kv_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Snapshot.ProtoReflect.Descriptor instead.
+func (*Snapshot) Descriptor() ([]byte, []int) {
+	return file_kv_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *Snapshot) GetRevision() int64 {
+	if x != nil {
+		return x.Revision
+	}
+	return 0
+}
+
+func (x *Snapshot) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *Snapshot) GetKvs() []*KeyValue {
+	if x != nil {
+		return x.Kvs
+	}
+	return nil
+}
+
 var File_kv_proto protoreflect.FileDescriptor
 
 const file_kv_proto_rawDesc = "" +
@@ -1041,7 +1101,12 @@ const file_kv_proto_rawDesc = "" +
 	"cluster_id\x18\x01 \x01(\x04R\tclusterId\x12\x1b\n" +
 	"\tmember_id\x18\x02 \x01(\x04R\bmemberId\x12\x1a\n" +
 	"\brevision\x18\x03 \x01(\x03R\brevision\x12\x1b\n" +
-	"\traft_term\x18\x04 \x01(\x04R\braftTermB\vZ\tapi/protob\x06proto3"
+	"\traft_term\x18\x04 \x01(\x04R\braftTerm\"f\n" +
+	"\bSnapshot\x12\x1a\n" +
+	"\brevision\x18\x01 \x01(\x03R\brevision\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x02 \x01(\x03R\tcreatedAt\x12\x1f\n" +
+	"\x03kvs\x18\x03 \x03(\v2\r.api.KeyValueR\x03kvsB\vZ\tapi/protob\x06proto3"
 
 var (
 	file_kv_proto_rawDescOnce sync.Once
@@ -1056,7 +1121,7 @@ func file_kv_proto_rawDescGZIP() []byte {
 }
 
 var file_kv_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_kv_proto_goTypes = []any{
 	(Event_EventType)(0),       // 0: api.Event.EventType
 	(*KeyValue)(nil),           // 1: api.KeyValue
@@ -1072,6 +1137,7 @@ var file_kv_proto_goTypes = []any{
 	(*DeleteResponse)(nil),     // 11: api.DeleteResponse
 	(*Event)(nil),              // 12: api.Event
 	(*ResponseHeader)(nil),     // 13: api.ResponseHeader
+	(*Snapshot)(nil),           // 14: api.Snapshot
 }
 var file_kv_proto_depIdxs = []int32{
 	13, // 0: api.PutResponse.header:type_name -> api.ResponseHeader
@@ -1087,11 +1153,12 @@ var file_kv_proto_depIdxs = []int32{
 	0,  // 10: api.Event.type:type_name -> api.Event.EventType
 	1,  // 11: api.Event.kv:type_name -> api.KeyValue
 	1,  // 12: api.Event.prev_kv:type_name -> api.KeyValue
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	1,  // 13: api.Snapshot.kvs:type_name -> api.KeyValue
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_kv_proto_init() }
@@ -1110,7 +1177,7 @@ func file_kv_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_kv_proto_rawDesc), len(file_kv_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   13,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

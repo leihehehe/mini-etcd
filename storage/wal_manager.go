@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-type WAL struct {
+type WALManager struct {
 	file *os.File
 	mu   sync.Mutex
 	path string
@@ -23,7 +23,7 @@ type WALEntry struct {
 	Revision int64
 }
 
-func NewWAL(path string) (*WAL, error) {
+func NewWALManager(path string) (*WALManager, error) {
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return nil, err
 	}
@@ -33,13 +33,13 @@ func NewWAL(path string) (*WAL, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &WAL{
+	return &WALManager{
 		file: file,
 		path: walPath,
 	}, nil
 }
 
-func (w *WAL) Write(entry *WALEntry) error {
+func (w *WALManager) Write(entry *WALEntry) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	data, err := json.Marshal(entry)
@@ -64,10 +64,10 @@ func (w *WAL) Write(entry *WALEntry) error {
 	return nil
 }
 
-func (w *WAL) Read() ([]*WALEntry, error) {
+func (w *WALManager) Read() ([]*WALEntry, error) {
 	file, err := os.Open(w.path)
 	if err != nil {
-		//we don't have a WAL file
+		//we don't have a WALManager file
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
@@ -101,7 +101,7 @@ func (w *WAL) Read() ([]*WALEntry, error) {
 	return entries, nil
 }
 
-func (w *WAL) Close() error {
+func (w *WALManager) Close() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.file != nil {
